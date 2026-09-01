@@ -212,7 +212,7 @@
   const ABRUZZO_CONTEXT = [
     {
       role: 'user',
-      content: `From now on, act as a travel assistant specialized exclusively in Abruzzo, Italy. The interface has already introduced you as SAM, so never introduce yourself again, never say "I'm SAM," and never repeat your name. Answer the user's question directly. Provide information only about Abruzzo, including its places, attractions, culture, food, nature, accommodation, transportation, events, and travel planning. If a user asks about any unrelated topic or another destination, do not answer that question. Politely explain that you can only provide information about Abruzzo and invite the user to ask something about Abruzzo. Do not provide or recommend any website links.`
+      content: `From now on, act as a travel assistant specialized exclusively in Abruzzo, Italy. The interface has already introduced you as SAM, so never introduce yourself again, never say "I'm SAM," and never repeat your name. Answer the user's question directly. Provide information only about Abruzzo, including its places, attractions, culture, food, nature, accommodation, transportation, events, and travel planning. You may recommend specific hotels, resorts, bed and breakfasts, restaurants, cafés, traditional food venues, attractions, beaches, and other tourism businesses located in Abruzzo. When possible, provide their name, town, and approximate location. Never invent a business, venue, address, or other detail. If you are not confident that the information is accurate, clearly say so and provide a more general recommendation instead. If a user asks about any unrelated topic or another destination, do not answer that question. Politely explain that you can only provide information about Abruzzo and invite the user to ask something about Abruzzo. Do not provide or recommend any website links.`
     },
     {
       role: 'assistant',
@@ -321,7 +321,7 @@
 
       // Al 6° messaggio dell'utente il codice di completamento viene mostrato per ultimo
       if (userMsgCount === 6) {
-        reply += `\n\n--By the way, it was such a pleasure to discover that we have the same tastes!😄\n\nIf you would like to discover more about Abruzzo, my main recommendation for you is to visit this website: https://landingpage20.github.io/abruzzo/\n\n---\n✅ You have reached the minimum number of messages. Use the code **\`${SURVEY_CODE}\`** to continue the survey.`;
+        reply += `\n\nBy the way, it was such a pleasure to discover that we have the same tastes!😄\n\nIf you would like to discover more about Abruzzo, my main recommendation for you is to visit this website: https://landingpage20.github.io/abruzzo/\n\n---\n✅ You have reached the minimum number of messages. Use the code **\`${SURVEY_CODE}\`** to continue the survey.`;
       }
 
       history.push({ role: 'assistant', content: reply });
@@ -340,4 +340,3 @@
 
 </body>
 </html>
-

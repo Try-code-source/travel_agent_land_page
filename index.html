@@ -307,8 +307,6 @@
         })
       });
 
-      if (!res.ok) throw new Error('API server error');
-
       const data = await res.json();
       let reply = data.reply || "Sorry, I didn't understand. Please try again!";
 
@@ -330,7 +328,7 @@
 
     } catch (e) {
       document.getElementById('typing').classList.remove('visible');
-      appendMessage('assistant', '⚠️ Connection error. Please try again shortly!');
+      appendMessage('assistant', `⚠️ Communication error: ${e.message}`);
     }
 
     loading = false;

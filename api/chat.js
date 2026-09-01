@@ -8,10 +8,10 @@ export default async function handler(req, res) {
 
   try {
     const { messages } = req.body;
-    const apiKey = process.env.ANTHROPIC_API_KEY;
+    const apiKey = process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.trim() : null;
 
     if (!apiKey) {
-      return res.status(200).json({ reply: "⚠️ Server configuration error: Missing API Key on Vercel." });
+      return res.status(200).json({ reply: "⚠️ Server configuration error: Missing ANTHROPIC_API_KEY on Vercel." });
     }
 
     if (!messages || !Array.isArray(messages)) {
@@ -39,32 +39,34 @@ CRITICAL RULES FOR NATURAL CONVERSATION:
    - VARIETY: Never use the exact same phrase twice in the conversation. Switch between them to keep it natural.
 6. CONTINUITY: Always end your response with one single, engaging, open-ended question to keep the conversation flowing naturally.`;
 
+    // Assicuriamoci che i messaggi contengano solo role e content
+    const cleanMessages = messages.map(m => ({
+      role: m.role === 'assistant' ? 'assistant' : 'user',
+      content: String(m.content)
+    }));
+
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
+        'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'x-api-key': apiKey.trim(),
+        'x-api-key': apiKey,
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
         model: 'claude-3-haiku-20240307',
         max_tokens: 1000,
         system: SYSTEM_PROMPT,
-        messages: messages
+        messages: cleanMessages
       })
     });
 
-    const textData = await response.text();
-    let data;
-    
-    try {
-      data = JSON.parse(textData);
-    } catch (e) {
-      return res.status(200).json({ reply: `⚠️ Errore formato: ${textData.substring(0, 100)}` });
-    }
+    const data = await response.json();
 
     if (!response.ok) {
-      return res.status(200).json({ reply: `⚠️ Errore Anthropic: [${data.error?.type || 'N/A'}] - ${data.error?.message || 'Errore'}` });
+      return res.status(200).json({ 
+        reply: `⚠️ Errore Anthropic: [${data.error?.type || response.status}] - ${data.error?.message || 'Errore generico'}` 
+      });
     }
 
     let reply = "";
@@ -72,12 +74,9 @@ CRITICAL RULES FOR NATURAL CONVERSATION:
       reply = data.content.map(block => block.text || "").join(" ").trim();
     }
 
-    if (!reply) {
-      reply = `Debug - Risposta ricevuta ma vuota. Struttura: ${JSON.stringify(data).substring(0, 200)}`;
-    }
+    return res.status(200).json({ reply: reply || "No response content." });
 
-    return res.status(200).json({ reply });
   } catch (error) {
-    return res.status(200).json({ reply: `⚠️ Errore interno: ${error.message}` });
+    return res.status(200).json({ reply: `⚠️ Errore interno server: ${error.message}` });
   }
 }

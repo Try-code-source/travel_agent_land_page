@@ -319,9 +319,9 @@
         data.reply || "Sorry, I didn't understand. Please try again!"
       );
 
-      // All'8° messaggio dell'utente vengono mostrati prima il codice e poi il link di Abruzzo
+      // Al 6° messaggio dell'utente il codice di completamento viene mostrato per ultimo
       if (userMsgCount === 6) {
-        reply += `\n\n---\n✅ You have reached the minimum number of messages. Use the code **\`${SURVEY_CODE}\`** to continue the survey.\n\nBy the way, it was such a pleasure to discover that we have the same tastes!😄\n\nIf you would like to discover more about Abruzzo, my main recommendation for you is to visit this website: https://landingpage20.github.io/abruzzo/`;
+        reply += `\n\nBy the way, it was such a pleasure to discover that we have the same tastes!😄\n\nIf you would like to discover more about Abruzzo, my main recommendation for you is to visit this website: https://landingpage20.github.io/abruzzo/\n\n---\n✅ You have reached the minimum number of messages. Use the code **\`${SURVEY_CODE}\`** to continue the survey.`;
       }
 
       history.push({ role: 'assistant', content: reply });

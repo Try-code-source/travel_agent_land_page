@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+eexport default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -8,10 +8,10 @@ export default async function handler(req, res) {
 
   try {
     const { messages } = req.body || {};
-    const apiKey = process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.trim() : null;
+    const apiKey = process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.trim() : null;
 
     if (!apiKey) {
-      return res.status(200).json({ reply: "⚠️ Missing OPENAI_API_KEY on Vercel environment variables." });
+      return res.status(200).json({ reply: "⚠️ Missing ANTHROPIC_API_KEY on Vercel environment variables." });
     }
 
     if (!messages || !Array.isArray(messages)) {
@@ -39,38 +39,54 @@ CRITICAL RULES FOR NATURAL CONVERSATION:
    - VARIETY: Never use the exact same phrase twice in the conversation. Switch between them to keep it natural.
 6. CONTINUITY: Always end your response with one single, engaging, open-ended question to keep the conversation flowing naturally.`;
 
-    const formattedMessages = [
-      { role: 'system', content: SYSTEM_PROMPT },
-      ...messages.map(m => ({
-        role: m.role === 'assistant' ? 'assistant' : 'user',
-        content: String(m.content)
-      }))
+    const cleanMessages = messages.map(m => ({
+      role: m.role === 'assistant' ? 'assistant' : 'user',
+      content: String(m.content)
+    }));
+
+    const candidateModels = [
+      'claude-3-5-sonnet-20241022',
+      'claude-3-5-haiku-20241022',
+      'claude-3-haiku-20240307',
+      'claude-3-opus-20240229'
     ];
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: formattedMessages,
-        max_tokens: 1000,
-        temperature: 0.7
-      })
-    });
+    let lastError = null;
 
-    const data = await response.json();
-
-    if (!response.ok) {
-      return res.status(200).json({ 
-        reply: `⚠️ API Error [${response.status}]: ${data.error?.message || JSON.stringify(data)}` 
+    for (const modelName of candidateModels) {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: modelName,
+          max_tokens: 1000,
+          system: SYSTEM_PROMPT,
+          messages: cleanMessages
+        })
       });
+
+      const data = await response.json();
+
+      if (response.ok && data.content && Array.isArray(data.content)) {
+        const reply = data.content.map(block => block.text || "").join(" ").trim();
+        return res.status(200).json({ reply });
+      }
+
+      if (response.status === 404) {
+        lastError = `[404] Model ${modelName} not found or not enabled.`;
+        continue;
+      } else {
+        return res.status(200).json({ 
+          reply: `⚠️ API Error [${response.status}]: ${data.error?.message || JSON.stringify(data)}` 
+        });
+      }
     }
 
-    const reply = data.choices?.[0]?.message?.content?.trim();
-    return res.status(200).json({ reply: reply || "Empty response from OpenAI." });
+    return res.status(200).json({ reply: `⚠️ All candidate models failed. Last detail: ${lastError}` });
 
   } catch (err) {
     return res.status(200).json({ reply: `⚠️ Server Crash: ${err.message}` });

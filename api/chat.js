@@ -1,21 +1,21 @@
-eexport default async function handler(req, res) {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Metodo non consentito' });
+  if (req.method !== 'POST') return res.status(405).json({ reply: 'Metodo non consentito' });
 
   try {
-    const { messages } = req.body;
+    const { messages } = req.body || {};
     const apiKey = process.env.ANTHROPIC_API_KEY ? process.env.ANTHROPIC_API_KEY.trim() : null;
 
     if (!apiKey) {
-      return res.status(200).json({ reply: "⚠️ Server configuration error: Missing ANTHROPIC_API_KEY on Vercel." });
+      return res.status(200).json({ reply: "⚠️ Missing ANTHROPIC_API_KEY on Vercel environment variables." });
     }
 
     if (!messages || !Array.isArray(messages)) {
-      return res.status(400).json({ reply: "⚠️ Bad Request: 'messages' field is missing or invalid." });
+      return res.status(200).json({ reply: "⚠️ Invalid messages format." });
     }
 
     const SYSTEM_PROMPT = `You are SAM, an expert, warm, and enthusiastic Travel Assistant.
@@ -47,13 +47,12 @@ CRITICAL RULES FOR NATURAL CONVERSATION:
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
-        'Accept': 'application/json',
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
+        model: 'claude-3-haiku-20240307',
         max_tokens: 1000,
         system: SYSTEM_PROMPT,
         messages: cleanMessages
@@ -64,7 +63,7 @@ CRITICAL RULES FOR NATURAL CONVERSATION:
 
     if (!response.ok) {
       return res.status(200).json({ 
-        reply: `⚠️ Errore Anthropic: [${data.error?.type || response.status}] - ${data.error?.message || 'Errore generico'}` 
+        reply: `⚠️ API Error [${response.status}]: ${data.error?.message || JSON.stringify(data)}` 
       });
     }
 
@@ -73,9 +72,9 @@ CRITICAL RULES FOR NATURAL CONVERSATION:
       reply = data.content.map(block => block.text || "").join(" ").trim();
     }
 
-    return res.status(200).json({ reply: reply || "No response content." });
+    return res.status(200).json({ reply: reply || "Empty response from Claude." });
 
-  } catch (error) {
-    return res.status(200).json({ reply: `⚠️ Errore interno server: ${error.message}` });
+  } catch (err) {
+    return res.status(200).json({ reply: `⚠️ Server Crash: ${err.message}` });
   }
 }

@@ -247,12 +247,32 @@
   let loading = false;
 
   function renderMarkdown(text) {
-    return text
+    const markdownLinks = [];
+
+    // Salva temporaneamente i link Markdown per evitare che il loro URL
+    // venga elaborato una seconda volta come link scritto per esteso.
+    text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (_, label, url) => {
+      const placeholder = `@@MARKDOWN_LINK_${markdownLinks.length}@@`;
+      markdownLinks.push(`<a href="${url}" target="_blank" rel="noopener noreferrer">${label} 🔗</a>`);
+      return placeholder;
+    });
+
+    text = text
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .replace(/`([^`]+)`/g, '<code>$1</code>')
-      .replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1 🔗</a>')
+      .replace(/(https?:\/\/[^\s<]+)/g, (url) => {
+        const trailingPunctuation = url.match(/[.,!?;:]+$/)?.[0] || '';
+        const cleanUrl = url.slice(0, url.length - trailingPunctuation.length);
+        return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer">${cleanUrl} 🔗</a>${trailingPunctuation}`;
+      })
       .replace(/\n/g, '<br/>');
+
+    markdownLinks.forEach((link, index) => {
+      text = text.replace(`@@MARKDOWN_LINK_${index}@@`, link);
+    });
+
+    return text;
   }
 
   function appendMessage(role, content) {

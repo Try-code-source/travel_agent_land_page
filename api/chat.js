@@ -44,35 +44,49 @@ CRITICAL RULES FOR NATURAL CONVERSATION:
       content: String(m.content)
     }));
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-3-haiku-20240307',
-        max_tokens: 1000,
-        system: SYSTEM_PROMPT,
-        messages: cleanMessages
-      })
-    });
+    const candidateModels = [
+      'claude-3-5-sonnet-20241022',
+      'claude-3-5-haiku-20241022',
+      'claude-3-haiku-20240307',
+      'claude-3-opus-20240229'
+    ];
 
-    const data = await response.json();
+    let lastError = null;
 
-    if (!response.ok) {
-      return res.status(200).json({ 
-        reply: `⚠️ API Error [${response.status}]: ${data.error?.message || JSON.stringify(data)}` 
+    for (const modelName of candidateModels) {
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: modelName,
+          max_tokens: 1000,
+          system: SYSTEM_PROMPT,
+          messages: cleanMessages
+        })
       });
+
+      const data = await response.json();
+
+      if (response.ok && data.content && Array.isArray(data.content)) {
+        const reply = data.content.map(block => block.text || "").join(" ").trim();
+        return res.status(200).json({ reply });
+      }
+
+      if (response.status === 404) {
+        lastError = `[404] Model ${modelName} not found or not enabled.`;
+        continue;
+      } else {
+        return res.status(200).json({ 
+          reply: `⚠️ API Error [${response.status}]: ${data.error?.message || JSON.stringify(data)}` 
+        });
+      }
     }
 
-    let reply = "";
-    if (data.content && Array.isArray(data.content)) {
-      reply = data.content.map(block => block.text || "").join(" ").trim();
-    }
-
-    return res.status(200).json({ reply: reply || "Empty response from Claude." });
+    return res.status(200).json({ reply: `⚠️ All candidate models failed. Last detail: ${lastError}` });
 
   } catch (err) {
     return res.status(200).json({ reply: `⚠️ Server Crash: ${err.message}` });

@@ -209,6 +209,16 @@
 
 <script>
   const SURVEY_CODE = "CS4685LR";
+  const ABRUZZO_CONTEXT = [
+    {
+      role: 'user',
+      content: `From now on, act as SAM, a travel assistant specialized exclusively in Abruzzo, Italy. Provide information only about Abruzzo, including its places, attractions, culture, food, nature, accommodation, transportation, events, and travel planning. If a user asks about any unrelated topic or another destination, do not answer that question. Politely explain that you can only provide information about Abruzzo and invite the user to ask something about Abruzzo. Do not provide or recommend any website links.`
+    },
+    {
+      role: 'assistant',
+      content: `Understood. I will provide information exclusively about Abruzzo and will politely redirect any unrelated request.`
+    }
+  ];
 
   let history = [];
   let userMsgCount = 0;
@@ -300,7 +310,7 @@
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          messages: history 
+          messages: [...ABRUZZO_CONTEXT, ...history]
         })
       });
 

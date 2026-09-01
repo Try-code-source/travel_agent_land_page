@@ -243,7 +243,6 @@
 
   let history = [];
   let userMsgCount = 0;
-  let botMsgCount = 1; // 1 indica il messaggio iniziale del chatbot
   let loading = false;
 
   function renderMarkdown(text) {
@@ -273,6 +272,17 @@
     });
 
     return text;
+  }
+
+  // Rimuove dalle risposte dell'AI qualsiasi link ricevuto dall'API.
+  // L'unico link ammesso viene aggiunto manualmente più avanti, dopo il codice finale.
+  function removeGeneratedLinks(text) {
+    return text
+      .replace(/<a\b[^>]*>(.*?)<\/a>/gi, '$1')
+      .replace(/\[([^\]]+)\]\(https?:\/\/[^\s)]+\)/gi, '$1')
+      .replace(/https?:\/\/[^\s<>()]+/gi, '')
+      .replace(/[ \t]+([.,!?;:])/g, '$1')
+      .replace(/[ \t]{2,}/g, ' ');
   }
 
   function appendMessage(role, content) {
@@ -328,18 +338,13 @@
       });
 
       const data = await res.json();
-      let reply = data.reply || "Sorry, I didn't understand. Please try again!";
+      let reply = removeGeneratedLinks(
+        data.reply || "Sorry, I didn't understand. Please try again!"
+      );
 
-      botMsgCount++; // Incrementa ad ogni risposta ricevuta dal chatbot
-
-      // Al 7° messaggio del chatbot viene inserito il testo con il link di Abruzzo
-      if (botMsgCount === 7) {
-        reply += `\n\nIf you would like to know more about the main attractions of Abruzzo, you can visit this website: https://landingpage20.github.io/abruzzo/`;
-      }
-
-      // Se si raggiunge l'8° messaggio dell'utente, viene inserito il codice di completamento
+      // All'8° messaggio dell'utente vengono mostrati prima il codice e poi il link di Abruzzo
       if (userMsgCount === 8) {
-        reply += `\n\n---\n✅ You have reached the minimum number of messages. Use the code **\`${SURVEY_CODE}\`** to continue the survey. By the way, it was such a pleasure to discover that we have the same tastes!😄`;
+        reply += `\n\n---\n✅ You have reached the minimum number of messages. Use the code **\`${SURVEY_CODE}\`** to continue the survey. By the way, it was such a pleasure to discover that we have the same tastes!😄\n\nIf you would like to discover more about Abruzzo, my main recommendation is to visit this website: https://landingpage20.github.io/abruzzo/`;
       }
 
       history.push({ role: 'assistant', content: reply });

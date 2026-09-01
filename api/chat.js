@@ -14,6 +14,10 @@ export default async function handler(req, res) {
       return res.status(200).json({ reply: "⚠️ Server configuration error: Missing API Key on Vercel." });
     }
 
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({ reply: "⚠️ Bad Request: 'messages' field is missing or invalid." });
+    }
+
     const SYSTEM_PROMPT = `You are SAM, an expert, warm, and enthusiastic Travel Assistant.
 
 CRITICAL RULES FOR NATURAL CONVERSATION:
@@ -43,7 +47,7 @@ CRITICAL RULES FOR NATURAL CONVERSATION:
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-5', 
+        model: 'claude-3-5-sonnet-20241022', 
         max_tokens: 1000,
         system: SYSTEM_PROMPT,
         messages: messages
@@ -63,7 +67,6 @@ CRITICAL RULES FOR NATURAL CONVERSATION:
       return res.status(200).json({ reply: `⚠️ Errore Anthropic: [${data.error?.type || 'N/A'}] - ${data.error?.message || 'Errore'}` });
     }
 
-    // Controllo flessibile e robusto per estrarre il testo da Claude 5
     let reply = "";
     if (data.content && Array.isArray(data.content)) {
       reply = data.content.map(block => block.text || "").join(" ").trim();

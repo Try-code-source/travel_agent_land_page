@@ -39,7 +39,6 @@ CRITICAL RULES FOR NATURAL CONVERSATION:
    - VARIETY: Never use the exact same phrase twice in the conversation. Switch between them to keep it natural.
 6. CONTINUITY: Always end your response with one single, engaging, open-ended question to keep the conversation flowing naturally.`;
 
-    // Assicuriamoci che i messaggi contengano solo role e content
     const cleanMessages = messages.map(m => ({
       role: m.role === 'assistant' ? 'assistant' : 'user',
       content: String(m.content)
@@ -54,7 +53,7 @@ CRITICAL RULES FOR NATURAL CONVERSATION:
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-3-haiku-20240307',
+        model: 'claude-3-5-sonnet-latest',
         max_tokens: 1000,
         system: SYSTEM_PROMPT,
         messages: cleanMessages

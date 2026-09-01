@@ -129,25 +129,6 @@
       40% { transform: translateY(-6px); }
     }
 
-    /* Suggestions */
-    #suggestions {
-      padding: 0 20px 12px;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .suggestion-btn {
-      background: #e0f0fa;
-      border: 1px solid #a8d4ed;
-      border-radius: 20px;
-      color: #1a5f8a;
-      padding: 6px 14px;
-      font-size: 12px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .suggestion-btn:hover { background: #c2e3f5; }
-
     /* Input area */
     #input-area {
       padding: 16px 20px;
@@ -205,12 +186,7 @@
       <div class="msg-avatar">🌍</div>
       <div class="msg-bubble assistant">
         Hello! I'm <strong>SAM</strong>, your personal travel assistant 🌍✈️<br><br>
-        Before we start, I'd love to know you better! What are your travel preferences? For example:<br>
-        🏖️ Beach or 🏔️ Mountains?<br>
-        🍕 Food lover or 🎭 Culture explorer?<br>
-        🎒 Budget backpacker or 💎 Luxury traveler?<br>
-        ⚡ Adventure seeker or 🧘 Relaxation mode?<br><br>
-        Tell me and I'll find the perfect trip for you!
+        Would you like to know more about Abruzzo?
       </div>
     </div>
 
@@ -222,13 +198,6 @@
         <div class="dot"></div>
       </div>
     </div>
-  </div>
-
-  <div id="suggestions">
-    <button class="suggestion-btn" onclick="sendMessage('✈️ Where to go in summer?')">✈️ Where to go in summer?</button>
-    <button class="suggestion-btn" onclick="sendMessage('🗺️ Tokyo itinerary 7 days')">🗺️ Tokyo itinerary 7 days</button>
-    <button class="suggestion-btn" onclick="sendMessage('💰 Budget travel in Europe')">💰 Budget travel in Europe</button>
-    <button class="suggestion-btn" onclick="sendMessage('🏖️ Beach destinations for families')">🏖️ Beach for families</button>
   </div>
 
   <div id="input-area">
@@ -315,8 +284,6 @@
     if (!userText || loading) return;
 
     input.value = '';
-    document.getElementById('suggestions').style.display = 'none';
-
     appendMessage('user', userText);
     history.push({ role: 'user', content: userText });
     userMsgCount++;
@@ -343,8 +310,8 @@
       );
 
       // All'8° messaggio dell'utente vengono mostrati prima il codice e poi il link di Abruzzo
-      if (userMsgCount === 6) {
-        reply += `\n\n---\n✅ You have reached the minimum number of messages. Use the code **\`${SURVEY_CODE}\`** to continue the survey. By the way, it was such a pleasure to see that we have the same tastes!😄\n\nI hope you found my suggestions helpful. If Abruzzo intrigues you and you would like to learn more about it, my main recommendation is to visit this website: https://landingpage20.github.io/abruzzo/`;
+      if (userMsgCount === 8) {
+        reply += `\n\n---\n✅ You have reached the minimum number of messages. Use the code **\`${SURVEY_CODE}\`** to continue the survey. By the way, it was such a pleasure to discover that we have the same tastes!😄\n\nIf you would like to discover more about Abruzzo, my main recommendation is to visit this website: https://landingpage20.github.io/abruzzo/`;
       }
 
       history.push({ role: 'assistant', content: reply });

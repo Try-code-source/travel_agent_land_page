@@ -47,7 +47,7 @@ CRITICAL RULES FOR NATURAL CONVERSATION:
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-latest',
+        model: 'claude-3-5-sonnet-20240620',
         max_tokens: 1000,
         system: SYSTEM_PROMPT,
         messages: messages

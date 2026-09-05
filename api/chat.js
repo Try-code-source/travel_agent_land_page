@@ -14,11 +14,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Estrae anche respondentId e userMessageCount inviati da index.html
-    const { messages, respondentId, userMessageCount } = req.body || {};
-
-    // Stampa nei log di Vercel l'ID utente per verifcarne il tracciamento
-    console.log(`[QUALTRICS TRACKING] Respondent ID: ${respondentId} | Msg Count: ${userMessageCount}`);
+    const { messages } = req.body || {};
 
     const apiKey = process.env.ANTHROPIC_API_KEY
       ? process.env.ANTHROPIC_API_KEY.trim()
@@ -99,7 +95,7 @@ Always finish with one engaging, open-ended question.
           "anthropic-version": "2023-06-01"
         },
         body: JSON.stringify({
-          model: "claude-3-haiku-20240307", // Modello Anthropic corretto e funzionante
+          model: "claude-haiku-4-5-20251001",
           max_tokens: 1000,
           system: SYSTEM_PROMPT,
           messages: cleanMessages

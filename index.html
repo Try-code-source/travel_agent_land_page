@@ -280,9 +280,10 @@
   <script>
     const SURVEY_CODE = "CS4685LR";
 
-    // Riceve il ResponseID inviato dal link di Qualtrics.
+    // Riceve sia user_id che session_id inviati dal link di Qualtrics
+    const urlParams = new URLSearchParams(window.location.search);
     const respondentId =
-      new URLSearchParams(window.location.search).get("session_id") || "unknown";
+      urlParams.get("user_id") || urlParams.get("session_id") || "unknown";
 
     const ABRUZZO_CONTEXT = [
       {
